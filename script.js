@@ -1,3 +1,4 @@
+// Updated script.js with direction arrows and limited Wind turns for Multiplayer mode
 const directions = ["N", "S", "E", "W", "NE", "NW", "SE", "SW"];
 
 const directionVectors = {
@@ -37,6 +38,14 @@ function render() {
   status.textContent = `Current turn: ${turn}`;
   app.appendChild(status);
 
+  const turnsUsed = document.createElement("p");
+  turnsUsed.textContent = `Wind turns used: ${usedDirections.length} / 7`;
+  app.appendChild(turnsUsed);
+
+  if (multiplayer && turn === "Wind" && usedDirections.length < 7) {
+    renderDirectionButtons();
+  }
+
   const gridContainer = document.createElement("div");
   gridContainer.className = "grid";
   grid.forEach((row, rIdx) =>
@@ -61,6 +70,28 @@ function render() {
   replayBtn.textContent = "Replay";
   replayBtn.onclick = resetGame;
   app.appendChild(replayBtn);
+}
+
+function renderDirectionButtons() {
+  const btnContainer = document.createElement("div");
+  btnContainer.style.marginBottom = "1rem";
+
+  directions.forEach(dir => {
+    if (usedDirections.includes(dir)) return;
+    const btn = document.createElement("button");
+    btn.textContent = `➤ ${dir}`;
+    btn.style.margin = "0.3rem";
+    btn.onclick = () => {
+      grid = simulateWindMove(dir);
+      usedDirections.push(dir);
+      turn = "Flower";
+      checkWin();
+      render();
+    };
+    btnContainer.appendChild(btn);
+  });
+
+  app.appendChild(btnContainer);
 }
 
 function renderStartScreen() {
@@ -100,31 +131,22 @@ function renderStartScreen() {
   mpSection.appendChild(mpLabel);
 
   const mpBtn = document.createElement("label");
-  mpBtn.className = "switch";  // Apply the class for styling the toggle button
-  
-  // Create the checkbox input for the toggle button
+  mpBtn.className = "switch";
   const toggleInput = document.createElement("input");
   toggleInput.type = "checkbox";
   toggleInput.id = "multiplayerToggle";
-  toggleInput.checked = multiplayer;  // Set the toggle based on the current multiplayer state
-  
-  // Create the span that acts as the slider (for styling the toggle switch)
+  toggleInput.checked = multiplayer;
   const slider = document.createElement("span");
   slider.className = "slider";
-  
-  // Append input and span to the label
   mpBtn.appendChild(toggleInput);
   mpBtn.appendChild(slider);
-  
-  // Add the toggle button to the desired location (for example, to the body or a container)
   document.body.appendChild(mpBtn);
-  
-  // Listen for the change event on the toggle
+
   toggleInput.addEventListener('change', () => {
-    multiplayer = toggleInput.checked; // Set multiplayer based on the toggle state
-    render(); // Call the render function to update the game state
+    multiplayer = toggleInput.checked;
+    render();
   });
-  
+
   mpSection.appendChild(mpBtn);
   container.appendChild(mpSection);
 
@@ -149,8 +171,7 @@ function handleCellClick(row, col) {
     render();
     if (!multiplayer) setTimeout(aiMove, 1000);
   } else if (multiplayer) {
-    grid[row][col] = "🌱";
-    turn = "Flower";
+    return;
   }
 
   checkWin();
@@ -206,7 +227,7 @@ function getAIMove() {
 }
 
 function aiMove() {
-  if (turn !== "Wind" || multiplayer) return;
+  if (turn !== "Wind" || multiplayer || usedDirections.length >= 7) return;
   const dir = getAIMove();
   if (!dir) return;
 
