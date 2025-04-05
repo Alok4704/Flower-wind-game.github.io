@@ -36,7 +36,7 @@
 - Vanilla JavaScript (DOM manipulation, AI logic)
 
 ## 📂 Project Structure
-flower-wind-game/
+flower-wind-game/                                                           
 ├── index.html        # Entry point – contains HTML layout and root elements
 ├── style.css         # All styling for layout, grid, buttons, animations, and responsiveness
 ├── script.js         # Core JavaScript logic: gameplay, AI, turn handling, win conditions
